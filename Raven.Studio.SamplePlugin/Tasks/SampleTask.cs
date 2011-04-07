@@ -12,7 +12,7 @@
 	{
 		readonly IServer server;
 		readonly IEventAggregator events;
-		const string DocumentId = "Sample/PauseUnitTest";
+		const string DocumentId = "Raven/Delete/Me/To/Continue/Running/The/Tests";
 		string status;
 
 		[ImportingConstructor]
