@@ -22,7 +22,7 @@ Developing plugins for Studio is easy to do. However, there are a set of technol
 
 * Silverlight
 * Managed Extensibility Framework (or MEF)
-* `Caliburn Micro<http://caliburnmicro.codeplex.com>`_
+* `Caliburn Micro <http://caliburnmicro.codeplex.com>`_
 * RavenDB's Silverlight API
 * Task Parallel Library for Silverlight
 
