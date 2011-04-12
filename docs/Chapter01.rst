@@ -6,11 +6,6 @@ Extending RavenDB Management Studio
 
 RavenDB Management Studio (or more simply, Studio) has a number of extension points where developers can augment its functionailty.
 
-TODO:
-* installing a plugin
-* debugging a plugin
-* reference
-
 What do you need to know?
 ============================
 
@@ -327,3 +322,24 @@ an inline lambda that does nothing.  It is important to note though that the ``x
 returned from ``QueryAsync``. We can examine it's properties to see what the result of our asychronous operation was. In the case of 
 everything executing correctly, the ``Result`` property will contain an instance of ``QueryResult`` and from there we can get the 
 actuall documents returned from the Raven server.
+
+TODO: how deep should we go?
+
+Installing a Plugin
+============================
+
+In order to make a Studio plugin available on a Raven server, simply drop the xap file into the plugins directory for the server.
+By default, the directory is ``~\Plugins``. However, you can specify a different location be modifying the config file for the 
+server. Simply add a new setting under ``<appSettings>``::
+
+  <add key="Raven/PluginsDirectory" value="YourDirectory"/>
+
+To load the plugin in Studio, just refresh the browser hosting Studio.
+
+Debugging a Plugin
+============================
+TODO:
+
+Class Reference
+============================
+TODO:
