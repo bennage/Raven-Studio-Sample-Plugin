@@ -6,14 +6,10 @@ Extending RavenDB Management Studio
 
 RavenDB Management Studio (or more simply, Studio) has a number of extension points where developers can augment its functionailty.
 
+TODO:
 * installing a plugin
-* building a task
-* best practices
-* * common patterns
-* * debugging a plugin
+* debugging a plugin
 * reference
-* * bits that you can make use of in Raven.Studio.dll
-* quick start
 
 What do you need to know?
 ============================
@@ -120,6 +116,17 @@ Building a Plugin
 The process of building Tasks and Explorer Items is nearly identical. We'll walk through the steps for constructing a new task,
 but we'll also point out the differences that you would want to address when developing an Explorer Item.
 
+For this tutorial, we will assume that our plugin is meant to work with the sample data that can be generated in an empty 
+database by Studio. Let's go ahead and generate a sample database now.
+
+* Launch RavenDB Managmenet Studio
+* Click the *HOME* link in the upper left corner
+* Click *Create New Database* on the bottom of the right-hand pane.
+* Give the new database a name and click *Create*.
+* With the new database selected, click *Use this database*
+* Navigate to the Summary screen
+* Click *Create sample data*
+
 Creating a Plugin Project
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -202,8 +209,8 @@ Both Tasks and Explorer Items are classes that have been decorated with attribut
 * Decorate the class with the attribute: ``[ExportTask("My First Task", Index = 100)]``
 * Make the class inherit from ``Caliburn.Micro.Screen``.
 
-The resulting class now looks like this:
-::
+The resulting class now looks like this::
+
 	using Raven.Studio.Plugins.Tasks;
 	using Caliburn.Micro;
 
@@ -278,7 +285,45 @@ ImportingConstructor is another MEF attribute. This one tells MEF that we have a
 and that we need MEF to 'import' this instance for us. In other words, MEF will automatically inject the instance provided
 by Studio when our plugin is loaded at runtime. There are other services we can import as well.
 
-Now, let say the we want our plugin to load a set of of documents that match a certain criteria every time the plugin screen
-is viewed. Since our plugin inherits from ``Screen``, we can use Caliburn Micro's ``OnActivate`` to load the documents. ``OnActivate`` is 
-called each time the screen is activated (that is, each time we request the screen to be viewed such as when we click on the
-menu item to display it).
+Now, let's say the we want our plugin to display the documents returned when we query against the Artists index where Name starts with
+'a'. In addition, we want to execute this query whenever the screen is viewed. Since our plugin inherits from ``Screen``, we can use 
+Caliburn Micro's ``OnActivate`` to load the documents. ``OnActivate`` is called each time the screen is activated (that is, each time 
+we request the screen to be viewed such as when we click on the menu item to display it).
+
+* Add the using statement to *MyFirstTask*: ``using Database.Data;``
+* Add the following code to *MyFirstTask*::
+
+	protected override void OnActivate()
+	{
+		var query = new IndexQuery {Query = "Name:a*"};
+
+		using (var session = server.OpenSession())
+		{
+			session.Advanced.AsyncDatabaseCommands
+				.QueryAsync("Artists", query, new string[]{})
+				.ContinueWith(x =>
+				{
+					var r = x.Result.Results;
+				});
+		}
+	}
+
+First, we define a query using the `Lucene syntax <http://lucene.apache.org/java/2_3_2/queryparsersyntax.html#Wildcard Searches>`_.
+We want all the of the documents where the Name field starts with the character 'a'.
+
+Next we create an instance of `IAsyncDocumentSession <https://github.com/ayende/ravendb/blob/master/Raven.Client.Lightweight/IAsyncDocumentSession.cs>`_
+by calling ``OpenSession`` on the ``IServer`` instance that was injected into the constructor of ``MyFirstTask``.
+
+Once we have a session, we can use it to execute our query against an index. ``QueryAsync`` takes the name of an index, the actual 
+query, and a set of document ids to include. We will use *Artists* for the index. It was created for us when we generated the 
+sample data. We don't need any includes, so we'll just provide an empty array.
+
+``QueryAsync`` returns an instance of ``Task<QueryResult>``. The term 'Task' here is not to be confused with the category of plugins 
+called Tasks. Instead, this Task comes from the asynchronous programming API called the Task Parallel Library (or TPL). It means that we have
+some asynchronous operation and that operation is called a *task*. TPL provides a convenient extension method, ``ContinueWith``.
+
+``ContinueWith`` allows us to provide a callback for what happens after the task completes. In our example, we are simply providing
+an inline lambda that does nothing.  It is important to note though that the ``x`` in our lambda is the ``Task<QueryResult>`` that is
+returned from ``QueryAsync``. We can examine it's properties to see what the result of our asychronous operation was. In the case of 
+everything executing correctly, the ``Result`` property will contain an instance of ``QueryResult`` and from there we can get the 
+actuall documents returned from the Raven server.
