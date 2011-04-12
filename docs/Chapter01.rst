@@ -262,9 +262,8 @@ This is primarily provided through the ``IServer`` interface.
 
 * Open the class MyFirstTask
 * Add using statements for ``Raven.Studio.Plugins`` and ``System.ComponentModel.Composition``.
-* Add the following code to the class:
+* Add the following code to the class::
 
-::
 	readonly server;
 
 	[ImportingConstructor]
