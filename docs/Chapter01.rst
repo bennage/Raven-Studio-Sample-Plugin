@@ -20,11 +20,11 @@ What do you need to know?
 
 Developing plugins for Studio is easy to do. However, there are a set of technologies that you need to be familiar with.
 
-* Silverlight
-* Managed Extensibility Framework (or MEF)
+* `Silverlight <http://www.silverlight.net/getstarted/>`_
+* `Managed Extensibility Framework (or MEF) <http://mef.codeplex.com/wikipage?title=Overview&referringTitle=Home>`_
 * `Caliburn Micro <http://caliburnmicro.codeplex.com>`_
-* RavenDB's Silverlight API
-* Task Parallel Library for Silverlight
+* `RavenDB's Silverlight API <https://github.com/ravendb/ravendb/tree/master/Raven.Client.Silverlight>`_
+* `Task Parallel Library for Silverlight <http://msdn.microsoft.com/en-us/vstudio/gg316360.aspx>`_
 
 Don't let this list discourage you. As long as you know the basics of C# and Silverlight, 
 we'll cover everything else you'll need to know to build plugins.
