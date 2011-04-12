@@ -53,7 +53,8 @@ Caliburn Micro
 ^^^^^^^^^^^^^^
 
 Caliburn Micro is an open source framework that facilitates building applications in Silverlight. It is particularly
-useful when using architectural patterns such as Model-View-ViewModel (of MVVM). Studio itself is built using Caliburn Micro.
+useful when using architectural patterns such as `Model-View-ViewModel (or MVVM) <http://en.wikipedia.org/wiki/Model_View_ViewModel>`_.
+Studio itself is built using Caliburn Micro.
 
 There is very little about Caliburn Micro that you *need* to know in order to develop plugins. We'll cover those basics for you.
 
@@ -66,7 +67,7 @@ RavenDB ships with an API Silverlight. This API is found in the Silverlight asse
 from Studio. The API itself is documented elsewhere and is designed to be easily discoverable. We'll refer to this as the *client* API.
 
 In addition, Studio has an API for plugin development built on top of the client API. The *plugin* API is found in the Silverlight
-assembly **Raven.Studio.dll** and most of the classes we'll use will be in the *Raven.Studio.Plugins* namespace.
+assembly **Raven.Studio.dll** and most of the classes we'll use will be in the ``Raven.Studio.Plugins`` namespace.
 
 Task Parallel Library
 ^^^^^^^^^^^^^^^^^^^^^
@@ -202,7 +203,7 @@ Both Tasks and Explorer Items are classes that have been decorated with attribut
 * Make the class inherit from ``Caliburn.Micro.Screen``.
 
 The resulting class now looks like this:
-
+::
 	using Raven.Studio.Plugins.Tasks;
 	using Caliburn.Micro;
 
