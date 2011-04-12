@@ -178,9 +178,9 @@ In fact, the combined size of these assemblies is about 1.75MB. Including these 
 loaded by Studio itself before the plugin loads. By setting the property Copy Local to False for each of the referenced 
 assemblies, we are telling the build process not to include the referenced assembly in the resulting xap.
 
-  .. figure::  _static/1.4-CopyLocal.png
+.. figure::  _static/1.4-CopyLocal.png
 
-  Figure 1.3 - Set Copy Local to False for each assembly
+  Figure 1.4 - Set Copy Local to False for each assembly
 
 Adding the Plugin Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -227,8 +227,8 @@ and ``OnDeactivate``.
 
 .. note::
 
-  If you want to create an Explorer Item, instead of a Task, use the attribute Raven.Studio.Plugins.Database.ExportDatabaseExplorerItem
-  instead of ExportTask.
+  If you want to create an Explorer Item, instead of a Task, use the attribute ``Raven.Studio.Plugins.Database.ExportDatabaseExplorerItem``
+  instead of ``ExportTask``.
 
 The class marked with the export attribute is the core of your plugin. It defines the behavior. Still, has does the user interact with 
 this class. We need to have some XAML associated with it that defines the actual screen that the user sees and interacts with.
@@ -244,7 +244,7 @@ By default, if your view model is name ``Something`` then Studio will look for a
   
     Alternatively, you can name all of your view models with the suffix "ViewModel" and all of your views with the suffix "View".
     Personally, I prefer the more succint approach of not having a suffix for my view models. You can learn more about the default
-    naming conventions used by Caliburn Micro here: TODO.
+    naming conventions used by Caliburn Micro `here <http://caliburnmicro.codeplex.com/wikipage?title=All%20About%20Conventions&referringTitle=Documentation>`_.
 
 * Right-click on the project in the Solution Explorer and select Add | New Item
 * Locate and select Silverlight User Control
@@ -263,14 +263,15 @@ This is primarily provided through the ``IServer`` interface.
 * Open the class MyFirstTask
 * Add using statements for ``Raven.Studio.Plugins`` and ``System.ComponentModel.Composition``.
 * Add the following code to the class:
-::
-  readonly server;
 
-  [ImportingConstructor]
-  public MyFirstTask(IServer server)
-  {
-	this.server = server;
-  }
+::
+	readonly server;
+
+	[ImportingConstructor]
+	public MyFirstTask(IServer server)
+	{
+		this.server = server;
+	}
 
 The definition of ``IServer`` can be `viewed here <https://github.com/ayende/ravendb/blob/master/Raven.Studio/Plugins/IServer.cs>`_.
 
