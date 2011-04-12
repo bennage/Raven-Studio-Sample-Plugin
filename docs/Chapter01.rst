@@ -6,11 +6,8 @@ Extending RavenDB Management Studio
 
 RavenDB Management Studio (or more simply, Studio) has a number of extension points where developers can augment its functionailty.
 
-* knowledge requirements
-* types of plugins
 * installing a plugin
 * building a task
-* building an explorer item
 * best practices
 * * common patterns
 * * debugging a plugin
@@ -128,13 +125,16 @@ Creating a Plugin Project
 Open Visual Studio 2010, a create a new Silverlight Application.
 
 * File | New | Project
-* In the New Project dialog, select Silverlight Application and click Ok. You can locate the project template using the search bar in the 
-upper right corner of the dialog.
-* In the New Silverlight Application Dialog, uncheck _Host the Silverlight application in a Web site_ and make sure that
-Silverlight 4 is selected under Options then click Ok.
+* In the New Project dialog, select Silverlight Application and click Ok. You can locate the project template using the search bar in the upper right corner of the dialog.
+* In the New Silverlight Application Dialog, uncheck _Host the Silverlight application in a Web site_ and make sure that Silverlight 4 is selected under Options then click Ok.
+* Delete MainPage.xaml. 
 
 Be sure to select a Silverlight Application and not a Silverlight Class Library. The Silverlight Appliccation will produce a _xap_ file 
 when compiled. Xap files are the unit of deployment for Silverlight application and for Studio plugins as well.
+
+.. figure::  _static/1.2-NewProject.png
+
+  Figure 1.2 - New Silverlight Project
 
 Referencing Assemblies
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -148,3 +148,135 @@ assemblies match the versions that are included with Studio. The assemblies are:
 * Raven.Client.Silverlight.dll
 * Raven.Studio.dll
 * System.Windows.Controls.Toolkit.dll
+* System.ComponentModel.Composition.dll
+
+You can acquire the set of assemblies (with the exception of System.ComponentModel.Composition.dll) by locating the file 
+*Raven.Studio.xap". This file is the result of compiling the Raven.Studio project in the RavenDB source. Rename the file 
+to Raven.Studio.zip. You can then unzip the file and copy all the required assemblies.
+
+Let's return to our sample plugin.
+
+* Right-click on the project in the Solution Explorer and select Add Reference.
+* Go to the Browse tab, then locate and select the assemblies we extracted from Raven.Studio.xap. 
+* Click Ok
+* Select Add Reference again, but this time the .NET tab.
+* Locate and select System.ComponentModel.Composition. Click Add.
+* After all of the assemblies have been added, expand the References node in Solution Explorer
+* Right-click on one of the assemblies we just added and select Properties.
+* In the Properties panel for the assembly, set Copy Local to False
+* Repeat setting Copy Local to False for each of the assemblies we just added.
+
+.. figure::  _static/1.3-AddReference.png
+
+  Figure 1.3 - Adding References
+
+We've already mentioned that the unit of deployment for Raven plugins is a xap file. Any assembly that we reference in our Silverlight 
+Application will be included in the xap file when we compile. This can significantly (and unnecessarily) increase the size of our plugin. 
+In fact, the combined size of these assemblies is about 1.75MB. Including these assemblies is unnessary because they will already be 
+loaded by Studio itself before the plugin loads. By setting the property Copy Local to False for each of the referenced 
+assemblies, we are telling the build process not to include the referenced assembly in the resulting xap.
+
+  .. figure::  _static/1.4-CopyLocal.png
+
+  Figure 1.3 - Set Copy Local to False for each assembly
+
+Adding the Plugin Interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You have a great deal of liberty in deciding how to implement your plugin for Studio. However, Studio does make a couple of assumptions
+about the structure of your plugin and we need to obey a few rules.
+
+These rules can be summarized:
+
+* Identify plugins using export attributes.
+* Start with "view model" classes that represent the behavior of the plugin.
+* Fllow naming conventions to associate the xaml "view" with the "view model" class.
+
+Both Tasks and Explorer Items are classes that have been decorated with attributes that identify them as one of the extensions.
+
+* Right-click on the project in the Solution Explorer and select Add | Class
+* In the New Item dialog, name the class MyFirstTask and click Add.
+* Add the using statement to our new class: using Raven.Studio.Plugins.Tasks;
+* Decorate the class with the attribute: [ExportTask("My First Task", Index = 100)]
+* Make the class inherit from Caliburn.Micro.Screen.
+
+The resulting class now looks like this:::
+
+	using Raven.Studio.Plugins.Tasks;
+	using Caliburn.Micro;
+
+	namespace MyFirstStudioPlugin
+	{
+	    [ExportTask("My First Task", Index = 100)]
+	    public class MyFirstTask : Screen
+	    {
+
+	    }
+	}
+
+The attribute Raven.Studio.Plugins.Task.ExportTask identifies this class as a new Task for Studio to load. The term "Export" in the 
+attribute name is from MEF. "Exporting" a class is how we let MEF know that this is a class it will be interested in. ExportTask has
+two parameters. The first is required and it is the string text to be displayed in the Tasks menu. Index is optional. It identifies 
+the position of item on the menu. Menu items are sorted in ascending order.
+
+We also inherit from Caliburn Micro's screen. This class provides two features we'll make use of. First, it has a convenient
+implementation of ``INotifyPropertyChanged``. Secondly, it provides some basic life cycle hooks such as OnInitialize, OnActivate,
+and OnDeactivate.
+
+.. note::
+
+  If you want to create an Explorer Item, instead of a Task, use the attribute Raven.Studio.Plugins.Database.ExportDatabaseExplorerItem
+  instead of ExportTask.
+
+The class marked with the export attribute is the core of your plugin. It defines the behavior. Still, has does the user interact with 
+this class. We need to have some XAML associated with it that defines the actual screen that the user sees and interacts with.
+In this context, the exported class is a "view model" and the associated xaml that we have not yet created is the "view".  
+
+Studio follows the 'view model first' philosophy. This means that the plugin infrastructure begins by identifying the exported class
+(that is, the view model) and then tries to find the associated view needed to render it. Caliburn Micro handles all the details of
+wiring up the view and the view model for us. All you need to do is follow a naming convention.
+
+By default, if your view model is name "Something" then Studio will look for a view called "SomethingView".
+
+.. note::
+  
+    Alternatively, you can name all of your view models with the suffix "ViewModel" and all of your views with the suffix "View".
+    Personally, I prefer the more succint approach of not having a suffix for my view models. You can learn more about the default
+    naming conventions used by Caliburn Micro here: TODO.
+
+* Right-click on the project in the Solution Explorer and select Add | New Item
+* Locate and select Silverlight User Control
+* Name the user control *MyFirstTaskView*
+* Click Add
+
+When we run our plugin, Caliburn Micro will use the user control MyFirstTaskView to render the exported class MyFirstTask.
+
+Accessing Studio Services
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In order for our plugin to useful, we need to have access to the context and services provided by Studio.
+
+This is primarily provided through the ``IServer`` interface.
+
+* Open the class MyFirstTask
+* Add using statements for Raven.Studio.Plugins and System.ComponentModel.Composition.
+* Add the following code to the class:
+::
+  readonly server;
+
+  [ImportingConstructor]
+  public MyFirstTask(IServer server)
+  {
+	this.server = server;
+  }
+
+The definition of ``IServer`` can be viewed here. TODO.
+
+ImportingConstructor is another MEF attribute. This one tells MEF that we have a dependency on an instance of ``IServer``
+and that we need MEF to 'import' this instance for us. In other words, MEF will automatically inject the instance provided
+by Studio when our plugin is loaded at runtime. There are other services we can import as well.
+
+Now, let say the we want our plugin to load a set of of documents that match a certain criteria every time the plugin screen
+is viewed. Since our plugin inherits from Screen, we can use Caliburn Micro's OnActivate to load the documents. OnActivate is 
+called each time the screen is activated (that is, each time we request the screen to be viewed such as when we click on the
+menu item to display it).
